@@ -10,7 +10,7 @@ Well... have you ever been in the _“ugh, I forgot to back this up first”_ si
 
 No?
 
-Stop lying... (:))
+Stop lying... 🥸
 
 **mirro** gives you a built-in safety net:
 
