@@ -5,7 +5,6 @@ import subprocess
 import os
 from pathlib import Path
 import time
-import uuid
 
 
 def read_file(path: Path) -> str:
