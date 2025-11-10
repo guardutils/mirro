@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import argparse
 import tempfile
 import subprocess
@@ -17,14 +16,25 @@ def write_file(path: Path, content: str):
     path.write_text(content, encoding="utf-8")
 
 
-def backup_original(
-    original_path: Path, original_content: str, backup_dir: Path
-) -> Path:
+def backup_original(original_path: Path, original_content: str, backup_dir: Path) -> Path:
     backup_dir.mkdir(parents=True, exist_ok=True)
-    timestamp = time.strftime("%Y%m%dT%H%M%S", time.gmtime())
-    backup_name = f"{original_path.name}.orig.{timestamp}.bak"
+    timestamp = time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime())
+    shortstamp = time.strftime("%Y%m%dT%H%M%S", time.gmtime())
+
+    backup_name = f"{original_path.name}.orig.{shortstamp}.bak"
     backup_path = backup_dir / backup_name
-    backup_path.write_text(original_content, encoding="utf-8")
+
+    header = (
+        "# ---------------------------------------------------\n"
+        "# mirro backup\n"
+        f"# Original file: {original_path}\n"
+        f"# Timestamp: {timestamp}\n"
+        "# Delete this header if you want to restore the file\n"
+        "# ---------------------------------------------------\n\n"
+    )
+
+    backup_path.write_text(header + original_content, encoding="utf-8")
+
     return backup_path
 
 
@@ -39,18 +49,13 @@ def main():
         default=str(Path.home() / ".local/share/mirro"),
         help="Backup directory",
     )
-    parser.add_argument(
-        "--editor",
-        type=str,
-        default=os.environ.get("EDITOR", "nano"),
-        help="Editor to use",
-    )
 
     args = parser.parse_args()
 
+    editor = os.environ.get("EDITOR","nano")
     target = Path(args.file).expanduser().resolve()
     backup_dir = Path(args.backup_dir).expanduser().resolve()
-    editor_cmd = args.editor.split()
+    editor_cmd = editor.split()
 
     # Permission checks
     parent = target.parent
@@ -61,14 +66,18 @@ def main():
         print(f"Need elevated privileges to create {target}")
         return 1
 
-    # Read original
-    original_content = read_file(target)
+    # Read original or prepopulate for new file
+    if target.exists():
+        original_content = read_file(target)
+    else:
+        original_content = "This is a new file created with 'mirro'!\n"
 
     # Temp file for editing
     with tempfile.NamedTemporaryFile(
         delete=False, prefix="mirro-", suffix=target.suffix
     ) as tf:
         temp_path = Path(tf.name)
+    # Write prepopulated or original content to temp file
     write_file(temp_path, original_content)
 
     # Launch editor
