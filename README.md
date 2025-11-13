@@ -26,7 +26,7 @@ Stop lying... 🥸
 
 - requires `sudo` only when actually needed
 
-- accepts your most of your favourite editor's flags
+- accepts most of your favourite editor's flags
 
 It’s simple, predictable, and hard to misuse.
 
