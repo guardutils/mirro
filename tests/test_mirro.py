@@ -60,7 +60,9 @@ def test_backup_original(tmp_path, monkeypatch):
 
     # Freeze timestamps
     monkeypatch.setattr(
-        time, "gmtime", lambda: time.struct_time((2023, 1, 2, 3, 4, 5, 0, 0, 0))
+        time,
+        "gmtime",
+        lambda: time.struct_time((2023, 1, 2, 3, 4, 5, 0, 0, 0)),
     )
     monkeypatch.setattr(
         time,
@@ -71,7 +73,9 @@ def test_backup_original(tmp_path, monkeypatch):
         }[fmt],
     )
 
-    backup_path = mirro.backup_original(original_path, original_content, backup_dir)
+    backup_path = mirro.backup_original(
+        original_path, original_content, backup_dir
+    )
 
     assert backup_path.exists()
     text = backup_path.read_text(encoding="utf-8")
@@ -140,7 +144,9 @@ def test_main_missing_argument(capsys):
         with pytest.raises(SystemExit):
             mirro.main()
 
-    assert "the following arguments are required: file" in capsys.readouterr().err
+    assert (
+        "the following arguments are required: file" in capsys.readouterr().err
+    )
 
 
 # ============================================================

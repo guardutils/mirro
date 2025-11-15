@@ -6,7 +6,7 @@ You edit a temporary file, **mirro** detects whether anything changed, and if it
 
 ## Why mirro?
 
-Well... have you ever been in the _“ugh, I forgot to back this up first”_ situation? 
+Well... have you ever been in the _“ugh, I forgot to back this up first”_ situation?
 
 No?
 
@@ -110,3 +110,13 @@ poetry install
 - Ensure you have Poetry installed
 
 - Run `poetry run pytest -vvvv --cov=mirro --cov-report=term-missing --disable-warnings`
+
+## pre-commit
+This project uses [**pre-commit**](https://pre-commit.com/) to run automatic formatting and security checks before each commit (Black, Bandit, and various safety checks).
+
+To enable it:
+```
+poetry install
+poetry run pre-commit install
+```
+This ensures consistent formatting, catches common issues early, and keeps the codebase clean.
