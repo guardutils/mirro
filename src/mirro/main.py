@@ -77,7 +77,11 @@ def main():
     editor_extra = []
 
     for p in positional:
-        if file_arg is None and not p.startswith("+") and not p.startswith("-"):
+        if (
+            file_arg is None
+            and not p.startswith("+")
+            and not p.startswith("-")
+        ):
             file_arg = p
         else:
             editor_extra.append(p)
