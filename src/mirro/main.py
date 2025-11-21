@@ -171,18 +171,31 @@ def main():
 
         # read and strip header
         raw = last.read_text(encoding="utf-8", errors="replace")
-        restored = []
-        skipping = True
-        for line in raw.splitlines(keepends=True):
-            # header ends at first blank line after the dashed line block
-            if skipping:
-                if line.strip() == "" and restored == []:
-                    # allow only after header
-                    continue
-                if line.startswith("#") or line.strip() == "":
-                    continue
-                skipping = False
-            restored.append(line)
+        lines = raw.splitlines(keepends=True)
+
+        restored = None
+
+        # Detect a mirro header only if the file begins with the header line
+        if lines and lines[0].startswith(
+            "# ---------------------------------------------------"
+        ):
+            restored = []
+            i = 0
+            # Skip until the first blank line AFTER the header block
+            while i < len(lines):
+                line = lines[i]
+                i += 1
+                # the header ends when we hit a blank line
+                if line.strip() == "":
+                    break
+            # i now points to the first real line of the original file
+            restored = lines[i:]
+        else:
+            # No header found — keep file verbatim
+            restored = lines
+
+        restored_text = "".join(restored)
+        target.write_text(restored_text, encoding="utf-8")
 
         # if header wasn't present, restored = raw
         if not restored:
