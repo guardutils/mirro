@@ -150,7 +150,7 @@ sudo apt install mirro
 **Fedora 41, 42, 43**
 ```
 sudo dnf copr enable mdaleo/mirro
-sudo dnf install resrm
+sudo dnf install mirro
 ```
 
 ### From PyPI
