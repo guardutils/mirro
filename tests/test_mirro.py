@@ -565,3 +565,65 @@ def test_diff_wrong_backup_name_rejected(tmp_path, capsys):
     assert result == 1
     assert "does not match the file being diffed" in out
     assert "foo.txt.orig." in out
+
+
+# ============================================================
+# --status
+# ============================================================
+
+
+def test_status_no_backups(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+
+    backup_dir = tmp_path / "bk"  # no backups inside
+    with patch(
+        "sys.argv", ["mirro", "--status", "--backup-dir", str(backup_dir)]
+    ):
+        result = mirro.main()
+
+    out = capsys.readouterr().out
+    assert result == 0
+    assert f"No mirro backups found in {tmp_path}" in out
+
+
+def test_status_backups_found(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+
+    cwd = tmp_path
+    backup_dir = tmp_path / "bk"
+    backup_dir.mkdir()
+
+    # Files in current directory
+    f1 = tmp_path / "a.txt"
+    f2 = tmp_path / "b.txt"
+    f1.write_text("data1")
+    f2.write_text("data2")
+
+    # Backups
+    (backup_dir / "a.txt.orig.20200101T000000").write_text("backup1")
+    (backup_dir / "a.txt.orig.20200101T010000").write_text("backup2")
+    (backup_dir / "b.txt.orig.20200202T020000").write_text("backup3")
+
+    # mtimes
+    t1 = time.time() - 200
+    t2 = time.time() - 100
+    t3 = time.time() - 50
+
+    os.utime(backup_dir / "a.txt.orig.20200101T000000", (t1, t1))
+    os.utime(backup_dir / "a.txt.orig.20200101T010000", (t2, t2))
+    os.utime(backup_dir / "b.txt.orig.20200202T020000", (t3, t3))
+
+    with patch(
+        "sys.argv", ["mirro", "--status", "--backup-dir", str(backup_dir)]
+    ):
+        result = mirro.main()
+
+    out = capsys.readouterr().out
+
+    assert result == 0
+    assert f"Backed-up files in {cwd}" in out
+    assert "a.txt" in out
+    assert "b.txt" in out
+    assert "(2 backup(s)," in out
+    assert "(1 backup(s)," in out
+    assert "UTC" in out

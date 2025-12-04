@@ -1,5 +1,6 @@
 import importlib.metadata
 import argparse
+import argcomplete
 import tempfile
 import subprocess
 import os
@@ -119,6 +120,14 @@ def main():
         metavar=("FILE", "BACKUP"),
         help="Show a unified diff between FILE and BACKUP and exit",
     )
+
+    parser.add_argument(
+        "--status",
+        action="store_true",
+        help="Show which files in the current directory have 'revisions'",
+    )
+
+    argcomplete.autocomplete(parser)
 
     # Parse only options. Leave everything else untouched.
     args, positional = parser.parse_known_args()
@@ -249,6 +258,52 @@ def main():
 
         return
 
+    if args.status:
+        backup_dir = Path(args.backup_dir).expanduser().resolve()
+        cwd = Path.cwd()
+
+        if not backup_dir.exists():
+            print(f"No mirro backups found in {cwd}.")
+            return 0
+
+        # Build map: filename -> list of backups
+        backup_map = {}
+        for b in backup_dir.iterdir():
+            name = b.name
+            if ".orig." not in name:
+                continue
+            filename, _, _ = name.partition(".orig.")
+            backup_map.setdefault(filename, []).append(b)
+
+        # Find files in current dir that have backups
+        entries = []
+        for file in cwd.iterdir():
+            if file.is_file() and file.name in backup_map:
+                backups = backup_map[file.name]
+                backups_sorted = sorted(
+                    backups, key=lambda x: x.stat().st_mtime, reverse=True
+                )
+                latest = backups_sorted[0]
+
+                latest_mtime = time.strftime(
+                    "%Y-%m-%d %H:%M:%S UTC",
+                    time.gmtime(latest.stat().st_mtime),
+                )
+
+                entries.append((file.name, len(backups), latest_mtime))
+
+        # Nothing found?
+        if not entries:
+            print(f"No mirro backups found in {cwd}.")
+            return 0
+
+        # Otherwise print nice report
+        print(f"Files with history in {cwd}:")
+        for name, count, latest in entries:
+            print(f"  {name:16} ({count} revision(s), latest: {latest})")
+
+        return 0
+
     if args.restore_last:
         backup_dir = Path(args.backup_dir).expanduser().resolve()
         target = Path(args.restore_last).expanduser().resolve()
@@ -265,7 +320,7 @@ def main():
         ]
 
         if not backups:
-            print(f"No backups found for {target}")
+            print(f"No history found for {target}")
             return 1
 
         # newest backup
