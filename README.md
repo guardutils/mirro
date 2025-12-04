@@ -88,12 +88,14 @@ filename.ext.orig.20251110T174400
 ## Functionalities
 
 ### List all backup files stored in your backup directory.
+
 ```
 mirro --list
 ```
 Output includes permissions, owner/group, timestamps, and backup filenames.
 
 ### Restore the most recent backup for a given file.
+
 ```
 mirro --restore-last ~/.config/myapp/config.ini
 ```
@@ -105,24 +107,28 @@ This:
 3. and overwrites the target file with its original contents.
 
 ### Remove old backup files.
+
 ```
 mirro --prune-backups
 ```
 This removes backups older than the number of days set in `MIRRO_BACKUPS_LIFE`.
 
 ### Remove backups older than _N_ days
+
 ```
 mirro --prune-backups=14
 ```
 This keeps the last 14 days of backups and removes everything older.
 
 ### Remove all backups
+
 ```
 mirro --prune-backups=all
 ```
 This deletes every backup in the backup directory.
 
 ### Environment Variable
+
 `MIRRO_BACKUPS_LIFE` controls the default number of days to keep when using `mirro --prune-backups`.
 Its default value is **30** if not set otherwise.
 ```
@@ -135,9 +141,21 @@ Invalid or non-numeric values fall back to 30 days.
 **Note:** _a value of 0 is **invalid**_.
 
 ### Built-in diff
+
 This shows a _git-like_ diff of the current file version and any of that file backups.
 ```
 mirro --diff file file.orig.20251121T163121
+```
+
+### Shows current directory's history
+
+Shows which files in the current directory have _**edit history**_ recorded by mirro.
+For each file, it prints how many revisions exist and when the latest one was saved.
+```
+mirro --status
+
+Files with history in /foo/bar:
+  baz.conf         (3 revisions, latest: 2025-01-12 14:03 UTC)
 ```
 
 ## Installation
@@ -181,6 +199,18 @@ pip install mirro
 git clone https://github.com/guardutils/mirro.git
 cd mirro/
 poetry install
+```
+
+## TAB completion
+
+Add this to your `.bashrc`
+```
+eval "$(register-python-argcomplete mirro)"
+```
+
+And then
+```
+source ~/.bashrc
 ```
 
 ## How to run the tests
